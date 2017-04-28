@@ -16,7 +16,7 @@
 #include <unistd.h>
 
 // Define port number.  
-#define PORT_NUMBER "700" // My name is James, James Bond! 
+#define PORT_NUMBER "3354"
 #define BACKLOG 5 // Number of connections
 
 // Main code 
@@ -28,6 +28,9 @@ int main(){
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results
 	socklen_t addr_size; 
+
+	int bytes;
+	int sum[100];   
 
 	// Make sure the struct is empty 
 	memset(&hints, 0, sizeof(hints)); 
@@ -62,40 +65,45 @@ int main(){
 		return 1; 
 	}
 
-	// Bind socket to the port we passed in to getaddrinfo():
+	// Bind socket to the port we passed into getaddrinfo():
 	if(bind(socket_fd, servinfo->ai_addr, servinfo->ai_addrlen) == -1){
 		printf("There is an error in function: bind().\n");
 		close(socket_fd); 
 		return 1;
 	}
 
-	// Listen for connection incoming connections
+	// Listen for incoming connections
 	if(listen(socket_fd, BACKLOG) == -1){
 		printf("There is an error in function: listen().\n");
 		close(socket_fd);
 		return 1; 
 	}
 
-	// Print waiting message for the user to see
+	// Print waiting message
 	printf("Server is waiting for connection on port %s...\n", PORT_NUMBER);
 
 	// Wait for incoming connection
 	addr_size = sizeof(their_addr);
-	socket_is_connected = accept(socket_fd, (struct socketaddr *)&their_addr, &addr_size);
+	socket_is_connected = accept(socket_fd, (struct sockaddr *)&their_addr, &addr_size);
 
-	// Ready to communicate on new socket connection "socket_is_connected"
+	// Ready to communicate with new socket 
 	if(socket_is_connected == -1){
 		printf("There is an error in function: accept().\n");
-		return -1; 
+		return 1; 
 	}
+
+	// Print if connection is established 
+	printf("Connection between server and client established.\n");
+
+	int len, bytes_received; 
+	// Receive value from client 
+	if( (bytes_received = recv(socket_fd, void *buf, 140, 0)) != -1){
+		printf("There is an error in function: recv().\n");
+		return 1; 
+	}
+
 
 	
-
-	/*
-	if(accept() == -1){
-		printf("There is an error in function: accept().\n");
-	}
-	*/
 
 	// Free the linked list 
 	freeaddrinfo(servinfo);
