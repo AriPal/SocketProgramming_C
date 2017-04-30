@@ -17,20 +17,17 @@
 
 // Define port number.  
 #define PORT_NUMBER "3354"
-#define BACKLOG 5 // Number of connections
+#define BACKLOG 5 // Number of feasable clients
 
 // Main code 
 int main(){
 
 	struct sockaddr_storage their_addr;
 	int socket_fd, socket_is_connected;
-	int status; 
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results
 	socklen_t addr_size; 
-
-	int bytes;
-	int sum[100];   
+	int array[5]; 
 
 	// Make sure the struct is empty 
 	memset(&hints, 0, sizeof(hints)); 
@@ -49,7 +46,7 @@ int main(){
 	 * Param2 (Service): Port number, or the name of a particular service http, ftp, smtp.
 	 * Param2 (Hints): Points to struct you've already filled up 
 	 */
-	if((status = getaddrinfo(NULL, PORT_NUMBER, &hints, &servinfo)) != 0 ){
+	if(getaddrinfo(NULL, PORT_NUMBER, &hints, &servinfo) != 0){
 		printf("There is an error in function: getaddrinfo().\n");
 		return 1; 
 	}
@@ -95,17 +92,24 @@ int main(){
 	// Print if connection is established 
 	printf("Connection between server and client established.\n");
 
-	int len, bytes_received; 
-	// Receive value from client 
-	if( (bytes_received = recv(socket_fd, void *buf, 140, 0)) != -1){
-		printf("There is an error in function: recv().\n");
-		return 1; 
+	int run = 0; 
+
+	// Receive/send Data until socket is closed
+	while(run == 1){
+
+		printf("Inside while loop.\n");
+
 	}
 
 
+	printf("STOP\n");
 	
 
 	// Free the linked list 
 	freeaddrinfo(servinfo);
+	close(socket_fd); 
+	close(socket_is_connected); 
+
+	return 0; 
 
 }
