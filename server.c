@@ -18,6 +18,8 @@
 // Define port number.  
 #define PORT_NUMBER "3354"
 #define BACKLOG 5 // Number of feasable clients
+#define size_limit 5 // Size limit of array 
+
 
 // Main code 
 int main(){
@@ -27,7 +29,8 @@ int main(){
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results
 	socklen_t addr_size; 
-	int array[5]; 
+	int sum[size_limit];
+	int receive_value;   
 
 	// Make sure the struct is empty 
 	memset(&hints, 0, sizeof(hints)); 
@@ -91,13 +94,40 @@ int main(){
 
 	// Print if connection is established 
 	printf("Connection between server and client established.\n");
-
-	int run = 0; 
+	
+	int run = 1; 
+	int counter = 0; 
+	int return_status; 
 
 	// Receive/send Data until socket is closed
 	while(run == 1){
 
-		printf("Inside while loop.\n");
+		// Receive value from client
+		return_status = recv(socket_is_connected, &receive_value, sizeof(receive_value), 0); 
+
+		if(return_status > 0){
+
+			/*
+			 * Different computers use different byte orderings internally, one way to solve this:  	
+			 * htonl = Host to Network Long (Client-side)
+			 * ntohl = Network to Host Long (Server-side)
+			 */
+			receive_value = ntohl(receive_value); 
+			printf("Value received %d\n", receive_value);
+			// printf("Server received %d from client \n",sum[counter]);
+			// counter++;
+		}
+		
+
+
+
+
+
+		// Exit if array limit is reached 
+		if(counter == (size_limit - 1)){
+			printf("Exit while loop because array size limit %d is reached.\n", counter);
+			run = 0; 
+		}
 
 	}
 

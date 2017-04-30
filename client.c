@@ -21,9 +21,9 @@
 int main(){
 
 	struct addrinfo hints; 
-	struct addrinfo *servinfo; // Points to the results
-	int user_Input_Number; 
+	struct addrinfo *servinfo; // Points to the results  
 	int socket_fd; // Socket file descriptor
+	int connected_to_server;  
 
 
 	// Method is used to clear struct 
@@ -63,7 +63,58 @@ int main(){
 	}
 
 	// Print message
-	printf("Client is connected!! %d\n", connected_to_server);
+	printf("Client is connected to server!!\n");
+
+	// Variables used for testing
+	int run = 1; 
+	int status_send;  
+	int user_Input_Number; 
+	uint32_t network_byte_order; 
+
+	enum states{
+		wait,
+		calculate, 
+		send  
+	}state;
+
+	state = wait; 
+
+	printf("Current state is %d\n", state);
+
+
+
+
+	// while(run == 1){
+
+	// 	// User enters a number
+	// 	printf("Please enter a number: ");
+	// 	scanf("%d", &user_Input_Number);
+
+	// 	/*
+	// 	 * Different computers use different byte orderings internally, one way to solve this:  	
+	// 	 * htonl = Host to Network Long (Client-side)
+	// 	 * ntohl = Network to Host Long (Server-side)
+	// 	 */
+	// 	network_byte_order = htonl(user_Input_Number);
+
+	// 	// Send value to server 
+	// 	status_send = send(socket_fd, &network_byte_order, sizeof(uint32_t), 0);
+
+	// 	// Verify if value is sent
+	// 	if(status_send > 0){
+	// 		printf("Client sent value %d to server\n", user_Input_Number);
+	// 	} else {
+
+	// 	}
+
+	// 	/* State Machine Diagram */ 
+
+	// 	// State 1: Wait to receive number
+	// 	// State 2: Receives Number
+		
+
+
+	// }
 
 	// Free the linked list 
 	freeaddrinfo(servinfo);
