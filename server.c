@@ -97,7 +97,16 @@ int main(){
 	
 	int run = 1; 
 	int counter = 0; 
-	int return_status; 
+	int return_status;
+	int send_status;
+
+	// Critical states for server-side
+	enum states{
+		wait,
+		calculateSum, 
+		send,
+		exit  
+	} state;
 
 	// Receive/send Data until socket is closed
 	while(run == 1){

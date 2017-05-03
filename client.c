@@ -71,15 +71,49 @@ int main(){
 	int user_Input_Number; 
 	uint32_t network_byte_order; 
 
+	// Critical states for client-side
 	enum states{
-		wait,
-		calculate, 
-		send  
-	}state;
+		wait_For_Input,
+		sendVal, 
+		Wait_For_Sum,
+		printSum, 
+		exit  
+	} state;
 
-	state = wait; 
+	// We begin with "waiting" state
+	state = wait_For_Input; 
 
-	printf("Current state is %d\n", state);
+	while(run == 1){
+
+		// State Machine approach
+		switch(state){
+
+			case wait_For_Input:
+				printf("Please enter a number: ");
+				scanf("%d", &user_Input_Number); // Wait for user input
+				network_byte_order = htonl(user_Input_Number); // Convert number from host to network long
+				state = sendVal;
+
+				// Exit while loop if user enters "0"
+				if(network_byte_order == 0){
+					run = 0; 
+				}
+
+			case sendVal: 
+				// Send value to server
+				status_send = send(socket_fd, &network_byte_order, sizeof(uint32_t), 0);
+
+				// Verify if value is sent
+			 	if(status_send > 0){
+			 		printf("Client sent value %d to server\n", user_Input_Number);
+			 		state = wait_For_Input; 
+			 	} else{
+			 		printf("There is an error in function: send().\n");
+			 	}
+
+		} // end switch 
+
+	} // end while loop
 
 
 
