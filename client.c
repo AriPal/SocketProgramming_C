@@ -19,7 +19,6 @@
 
 // Main code 
 int main(){
-
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results  
 	int socket_fd; // Socket file descriptor
