@@ -29,8 +29,9 @@ int main(){
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results
 	socklen_t addr_size; 
-	int sum[size_limit];
-	int receive_value;   
+	int array[size_limit];
+	int receive_value;
+	int send_value;    
 
 	// Make sure the struct is empty 
 	memset(&hints, 0, sizeof(hints)); 
@@ -86,7 +87,7 @@ int main(){
 	addr_size = sizeof(their_addr);
 	socket_is_connected = accept(socket_fd, (struct sockaddr *)&their_addr, &addr_size);
 
-	// Ready to communicate with new socket 
+	// If communication fails
 	if(socket_is_connected == -1){
 		printf("There is an error in function: accept().\n");
 		return 1; 
@@ -96,53 +97,66 @@ int main(){
 	printf("Connection between server and client established.\n");
 	
 	int run = 1; 
+	int sum; 
 	int counter = 0; 
 	int return_status;
-	int send_status;
+	int send_status = 0; 
+	int totalSum = 0; 
+	uint32_t host_byte_order; 
 
 	// Critical states for server-side
 	enum states{
 		wait,
 		calculateSum, 
-		send,
+		send_Sum,
 		exit  
 	} state;
 
-	// Receive/send Data until socket is closed
+
+	// Enter first state "wait"
+	state = wait; 
+
 	while(run == 1){
-
-		// Receive value from client
-		return_status = recv(socket_is_connected, &receive_value, sizeof(receive_value), 0); 
-
-		if(return_status > 0){
-
-			/*
-			 * Different computers use different byte orderings internally, one way to solve this:  	
-			 * htonl = Host to Network Long (Client-side)
-			 * ntohl = Network to Host Long (Server-side)
-			 */
-			receive_value = ntohl(receive_value); 
-			printf("Value received %d\n", receive_value);
-			// printf("Server received %d from client \n",sum[counter]);
-			// counter++;
-		}
 		
+		// State Machine Diagram - Server-side
+		switch(state){
+			case wait: 
+				// Receive Value from client
+				return_status = recv(socket_is_connected, &receive_value, sizeof(receive_value), 0);
 
+				// Check if client has sent value
+				if(return_status > 0){
+				 // Different computers use different byte orderings internally, solution is to use htonl() and ntohl() 
+				 receive_value = ntohl(receive_value);
+				 // Move to next state
+				 state = calculateSum; 
+				} 
 
+			case calculateSum: 
+				// Add value into array
+				array[counter] = receive_value;
+				sum += array[counter];  
+				printf("Server has calculated the sum %d from client.\n", sum); 
+				counter++; 
 
+				// Move to next state "send"
+				state = send_Sum; 
 
+			case send_Sum: 
+				host_byte_order = htonl(sum); 
+				// Send value to client
+				send_status = send(socket_is_connected, &host_byte_order, sizeof(uint32_t), 0);
 
-		// Exit if array limit is reached 
-		if(counter == (size_limit - 1)){
-			printf("Exit while loop because array size limit %d is reached.\n", counter);
-			run = 0; 
-		}
+				// Check if server sends data
+				if(send_status > 0){
+					printf("Server sent %d to client\n", sum);
 
-	}
+					// Move to next state "Wait"
+					state = wait; 
+				} 
+		} // End switch case
+	} // End while loop
 
-
-	printf("STOP\n");
-	
 
 	// Free the linked list 
 	freeaddrinfo(servinfo);

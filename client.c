@@ -66,7 +66,9 @@ int main(){
 
 	// Variables used for testing
 	int run = 1; 
+	int sum;  
 	int status_send;  
+	int receive_status; 
 	int user_Input_Number; 
 	uint32_t network_byte_order; 
 
@@ -88,15 +90,16 @@ int main(){
 		switch(state){
 
 			case wait_For_Input:
-				printf("Please enter a number: ");
+				printf("Please enter a number: "); // Print waiting message
 				scanf("%d", &user_Input_Number); // Wait for user input
 				network_byte_order = htonl(user_Input_Number); // Convert number from host to network long
-				state = sendVal;
-
 				// Exit while loop if user enters "0"
 				if(network_byte_order == 0){
 					run = 0; 
 				}
+
+				// Move to next state
+				state = sendVal; 
 
 			case sendVal: 
 				// Send value to server
@@ -105,10 +108,25 @@ int main(){
 				// Verify if value is sent
 			 	if(status_send > 0){
 			 		printf("Client sent value %d to server\n", user_Input_Number);
-			 		state = wait_For_Input; 
+
+			 		// Move to next state "Wait_For_Sum"
+			 		state = Wait_For_Sum;
+
 			 	} else{
 			 		printf("There is an error in function: send().\n");
 			 	}
+
+			case Wait_For_Sum:
+				// Receive sum from server
+				receive_status = recv(socket_fd, &sum, sizeof(sum), 0);
+				sum = ntohl(sum); // Interpret value sent from server 
+
+				// Check if data is received from server
+				if(receive_status > 0 ){
+					printf("Client has received %d from server.\n", sum);
+				} 
+				state = wait_For_Input; 
+
 
 		} // end switch 
 
@@ -146,8 +164,8 @@ int main(){
 	// 	// State 2: Receives Number
 		
 
-
 	// }
+
 
 	// Free the linked list 
 	freeaddrinfo(servinfo);
