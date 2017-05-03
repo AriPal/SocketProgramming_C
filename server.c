@@ -128,19 +128,23 @@ int main(){
 				if(return_status > 0){
 				 // Different computers use different byte orderings internally, solution is to use htonl() and ntohl() 
 				 receive_value = ntohl(receive_value);
-				 // Move to next state
+
+				 // Jump to next state
 				 state = calculateSum; 
-				} 
+				} else {
+					state = exit;
+				}
+				break;
 
 			case calculateSum: 
 				// Add value into array
 				array[counter] = receive_value;
 				sum += array[counter];  
-				printf("Server has calculated the sum %d from client.\n", sum); 
 				counter++; 
 
-				// Move to next state "send"
+				// Jump to next state
 				state = send_Sum; 
+				break;
 
 			case send_Sum: 
 				host_byte_order = htonl(sum); 
@@ -149,19 +153,24 @@ int main(){
 
 				// Check if server sends data
 				if(send_status > 0){
-					printf("Server sent %d to client\n", sum);
-
-					// Move to next state "Wait"
+					// Jump to next state
 					state = wait; 
 				} 
+				break;
+
+			case exit:
+				// Free the linked list and exit while loop
+				freeaddrinfo(servinfo);
+				close(socket_fd); 
+				close(socket_is_connected); 
+				run = 0; 
+				break;
+
+
+
 		} // End switch case
 	} // End while loop
 
-
-	// Free the linked list 
-	freeaddrinfo(servinfo);
-	close(socket_fd); 
-	close(socket_is_connected); 
 
 	return 0; 
 

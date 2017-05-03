@@ -76,9 +76,9 @@ int main(){
 	enum states{
 		wait_For_Input,
 		sendVal, 
-		Wait_For_Sum,
+		wait_For_Sum,
 		printSum, 
-		exit  
+		exit,  
 	} state;
 
 	// We begin with "waiting" state
@@ -93,13 +93,15 @@ int main(){
 				printf("Please enter a number: "); // Print waiting message
 				scanf("%d", &user_Input_Number); // Wait for user input
 				network_byte_order = htonl(user_Input_Number); // Convert number from host to network long
-				// Exit while loop if user enters "0"
-				if(network_byte_order == 0){
-					run = 0; 
-				}
+				
+		 		// Jump to exit state if user enters "0"
+			 	if(network_byte_order == 0){
+			 		state = exit;
+			 	}
 
-				// Move to next state
-				state = sendVal; 
+				// Jump to next state
+				state = sendVal;
+				break;
 
 			case sendVal: 
 				// Send value to server
@@ -108,15 +110,16 @@ int main(){
 				// Verify if value is sent
 			 	if(status_send > 0){
 			 		printf("Client sent value %d to server\n", user_Input_Number);
-
-			 		// Move to next state "Wait_For_Sum"
-			 		state = Wait_For_Sum;
+			 		
+			 		// Jump to next state
+			 		state = wait_For_Sum;
 
 			 	} else{
 			 		printf("There is an error in function: send().\n");
 			 	}
+			 	break;
 
-			case Wait_For_Sum:
+			case wait_For_Sum:
 				// Receive sum from server
 				receive_status = recv(socket_fd, &sum, sizeof(sum), 0);
 				sum = ntohl(sum); // Interpret value sent from server 
@@ -124,47 +127,21 @@ int main(){
 				// Check if data is received from server
 				if(receive_status > 0 ){
 					printf("Client has received %d from server.\n", sum);
+					// Jump to next state
+					state = wait_For_Input;
 				} 
-				state = wait_For_Input; 
+				break;
 
+			case exit:
+				// Free the linked list and exit while loop
+				freeaddrinfo(servinfo);
+				close(socket_fd); 
+				run = 0;
+				break;
 
 		} // end switch 
 
 	} // end while loop
-
-
-
-
-	// while(run == 1){
-
-	// 	// User enters a number
-	// 	printf("Please enter a number: ");
-	// 	scanf("%d", &user_Input_Number);
-
-	// 	/*
-	// 	 * Different computers use different byte orderings internally, one way to solve this:  	
-	// 	 * htonl = Host to Network Long (Client-side)
-	// 	 * ntohl = Network to Host Long (Server-side)
-	// 	 */
-	// 	network_byte_order = htonl(user_Input_Number);
-
-	// 	// Send value to server 
-	// 	status_send = send(socket_fd, &network_byte_order, sizeof(uint32_t), 0);
-
-	// 	// Verify if value is sent
-	// 	if(status_send > 0){
-	// 		printf("Client sent value %d to server\n", user_Input_Number);
-	// 	} else {
-
-	// 	}
-
-	// 	/* State Machine Diagram */ 
-
-	// 	// State 1: Wait to receive number
-	// 	// State 2: Receives Number
-		
-
-	// }
 
 
 	// Free the linked list 
