@@ -96,10 +96,12 @@ int main(){
 		 		// Jump to exit state if user enters "0"
 			 	if(network_byte_order == 0){
 			 		state = exit;
+			 	}else{
+					// Jump to next state
+					state = sendVal;
 			 	}
 
-				// Jump to next state
-				state = sendVal;
+
 				break;
 
 			case sendVal: 
