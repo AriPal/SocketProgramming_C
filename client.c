@@ -16,13 +16,29 @@
 #include <unistd.h>
 
 #define PORT_NUMBER "3354" 
+#define IP_ADDRESS "localhost" // If you use external device, change this to e.g 192.168.0.1
 
 // Main code 
 int main(){
 	struct addrinfo hints; 
 	struct addrinfo *servinfo; // Points to the results  
 	int socket_fd; // Socket file descriptor
-	int connected_to_server;  
+	int connected_to_server; 
+	int run = 1; // while loop
+	int sum;  
+	int status_send;  
+	int receive_status; 
+	int user_Input_Number; 
+	uint32_t network_byte_order; 
+
+ 	// // States used to control Client-side
+	enum states{
+		wait_For_Input,
+		sendVal, 
+		wait_For_Sum,
+		printSum, 
+		exit,  
+	} state;
 
 
 	// Method is used to clear struct 
@@ -38,7 +54,7 @@ int main(){
 	 * Param2 (Service): Port number, or the name of a particular service http, ftp, smtp.
 	 * Param2 (Hints): Points to struct you've already filled up 
 	 */
-	if(getaddrinfo("localhost", PORT_NUMBER, &hints, &servinfo) != 0 ){
+	if(getaddrinfo(IP_ADDRESS, PORT_NUMBER, &hints, &servinfo) != 0 ){
 		printf("There is an error in function: getaddrinfo().\n");
 		return 1; 
 	}
@@ -61,32 +77,15 @@ int main(){
 		return 1; 
 	}
 
-	// Print message
+	// If evertying works, this message will be printed
 	printf("Client is connected to server!!\n");
 
-	// Variables used for testing
-	int run = 1; 
-	int sum;  
-	int status_send;  
-	int receive_status; 
-	int user_Input_Number; 
-	uint32_t network_byte_order; 
-
-	// Critical states for client-side
-	enum states{
-		wait_For_Input,
-		sendVal, 
-		wait_For_Sum,
-		printSum, 
-		exit,  
-	} state;
-
-	// We begin with "waiting" state
-	state = wait_For_Input; 
+	// Enter first state "waiting" 
+	state = wait_For_Input;
 
 	while(run == 1){
 
-		// State Machine approach
+		// State Machine Architectural approach
 		switch(state){
 
 			case wait_For_Input:
@@ -109,7 +108,7 @@ int main(){
 
 				// Verify if value is sent
 			 	if(status_send > 0){
-			 		printf("Client sent value %d to server\n", user_Input_Number);
+			 		printf("Client sent users entered value %d to server\n", user_Input_Number);
 			 		
 			 		// Jump to next state
 			 		state = wait_For_Sum;
@@ -126,7 +125,7 @@ int main(){
 
 				// Check if data is received from server
 				if(receive_status > 0 ){
-					printf("Client has received %d from server.\n", sum);
+					printf("Client has received this sum %d from server.\n", sum);
 					// Jump to next state
 					state = wait_For_Input;
 				} 
@@ -140,13 +139,7 @@ int main(){
 				break;
 
 		} // end switch 
-
 	} // end while loop
-
-
-	// Free the linked list 
-	freeaddrinfo(servinfo);
-	close(socket_fd); 
 
 	return 0; 
 }

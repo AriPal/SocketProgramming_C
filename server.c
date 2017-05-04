@@ -18,12 +18,13 @@
 // Define port number.  
 #define PORT_NUMBER "3354"
 #define BACKLOG 5 // Number of feasable clients
-#define size_limit 5 // Size limit of array 
+#define size_limit 10000 // Size limit of array 
 
 
 // Main code 
 int main(){
 
+	// Define variables 
 	struct sockaddr_storage their_addr;
 	int socket_fd, socket_is_connected;
 	struct addrinfo hints; 
@@ -31,7 +32,22 @@ int main(){
 	socklen_t addr_size; 
 	int array[size_limit];
 	int receive_value;
-	int send_value;    
+	int send_value; 
+	int run = 1; 
+	int sum; 
+	int counter = 0; 
+	int return_status;
+	int send_status = 0; 
+	int totalSum = 0; 
+	uint32_t host_byte_order; 
+
+	// States used to control Server-side
+	enum states{
+		wait,
+		calculateSum, 
+		send_Sum,
+		exit  
+	} state;  
 
 	// Make sure the struct is empty 
 	memset(&hints, 0, sizeof(hints)); 
@@ -95,36 +111,19 @@ int main(){
 
 	// Print if connection is established 
 	printf("Connection between server and client established.\n");
-	
-	int run = 1; 
-	int sum; 
-	int counter = 0; 
-	int return_status;
-	int send_status = 0; 
-	int totalSum = 0; 
-	uint32_t host_byte_order; 
-
-	// Critical states for server-side
-	enum states{
-		wait,
-		calculateSum, 
-		send_Sum,
-		exit  
-	} state;
-
 
 	// Enter first state "wait"
 	state = wait; 
 
 	while(run == 1){
 		
-		// State Machine Diagram - Server-side
+		// State Machine Architectural approach
 		switch(state){
 			case wait: 
-				// Receive Value from client
+				// Receive Value from client-side
 				return_status = recv(socket_is_connected, &receive_value, sizeof(receive_value), 0);
 
-				// Check if client has sent value
+				// Check if value has been received
 				if(return_status > 0){
 				 // Different computers use different byte orderings internally, solution is to use htonl() and ntohl() 
 				 receive_value = ntohl(receive_value);
@@ -147,8 +146,9 @@ int main(){
 				break;
 
 			case send_Sum: 
+				// Pack data before sending to client
 				host_byte_order = htonl(sum); 
-				// Send value to client
+				// Send data to client
 				send_status = send(socket_is_connected, &host_byte_order, sizeof(uint32_t), 0);
 
 				// Check if server sends data
@@ -165,9 +165,6 @@ int main(){
 				close(socket_is_connected); 
 				run = 0; 
 				break;
-
-
-
 		} // End switch case
 	} // End while loop
 
