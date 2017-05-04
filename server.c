@@ -1,8 +1,7 @@
 /*
  * Author: 		Dler Hasan
  * Filename: 	server.c
- * Description: 	Sockets Programming
- * University: 	Stevens Institute of Technology
+ * Description: Sockets Programming
  */
 
 // Includes necessary library for sockets programming

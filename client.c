@@ -2,7 +2,6 @@
 * Author: 		Dler Hasan
 * Filename: 	client.c
 * Description: 	Sockets Programming
-* University: 	Stevens Institute of Technology
 */
 
 // Includes necessary library for sockets programming
